@@ -1,6 +1,6 @@
 import { Prisma } from "@prisma/client";
 import { prisma } from "../prisma.js";
-import type { CreateQuizInput, UpdateQuizInput } from "../types/quiz.js";
+import type { CreateQuizInput, UpdateQuizInput } from "../schemas/quiz.js";
 
 export const getQuizzes = async () => {
   return prisma.quiz.findMany({
@@ -59,17 +59,57 @@ export const makeQuize = async (input: CreateQuizInput) => {
 export const updateQuize = async (id: string, input: UpdateQuizInput) => {
   return prisma.$transaction(async (tx: Prisma.TransactionClient) => {
     if (input.questions) {
-      await tx.question.deleteMany({ where: { quizId: id } });
-    }
+      const incomingQuestionIds = input.questions
+        .map((q) => q.id)
+        .filter((qid): qid is string => !!qid);
 
-    return tx.quiz.update({
-      where: { id },
-      data: {
-        title: input.title,
-        description: input.description,
-        ...(input.questions && {
-          questions: {
-            create: input.questions.map((q, qIndex) => ({
+      await tx.question.deleteMany({
+        where: { quizId: id, id: { notIn: incomingQuestionIds } },
+      });
+
+      for (let qIndex = 0; qIndex < input.questions.length; qIndex++) {
+        const q = input.questions[qIndex];
+
+        if (q.id) {
+          const incomingAnswerIds = q.answers
+            .map((a) => a.id)
+            .filter((aid): aid is string => !!aid);
+
+          await tx.answer.deleteMany({
+            where: { questionId: q.id, id: { notIn: incomingAnswerIds } },
+          });
+
+          await tx.question.update({
+            where: { id: q.id },
+            data: {
+              text: q.text,
+              type: q.type,
+              position: qIndex,
+            },
+          });
+
+          for (let aIndex = 0; aIndex < q.answers.length; aIndex++) {
+            const a = q.answers[aIndex];
+            if (a.id) {
+              await tx.answer.update({
+                where: { id: a.id },
+                data: { text: a.text, isCorrect: a.isCorrect, position: aIndex },
+              });
+            } else {
+              await tx.answer.create({
+                data: {
+                  questionId: q.id,
+                  text: a.text,
+                  isCorrect: a.isCorrect,
+                  position: aIndex,
+                },
+              });
+            }
+          }
+        } else {
+          await tx.question.create({
+            data: {
+              quizId: id,
               text: q.text,
               type: q.type,
               position: qIndex,
@@ -80,12 +120,23 @@ export const updateQuize = async (id: string, input: UpdateQuizInput) => {
                   position: aIndex,
                 })),
               },
-            })),
-          },
-        }),
+            },
+          });
+        }
+      }
+    }
+
+    return tx.quiz.update({
+      where: { id },
+      data: {
+        title: input.title,
+        description: input.description,
       },
       include: {
-        questions: { include: { answers: true } },
+        questions: {
+          orderBy: { position: "asc" },
+          include: { answers: { orderBy: { position: "asc" } } },
+        },
       },
     });
   });

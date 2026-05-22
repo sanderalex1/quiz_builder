@@ -17,7 +17,7 @@ router.get("/:id", asyncHandler(getQuizById));
 
 router.post("/", asyncHandler(createQuiz));
 
-router.put("/:id", asyncHandler(updateQuiz));
+router.patch("/:id", asyncHandler(updateQuiz));
 
 router.delete("/:id", asyncHandler(deleteQuiz));
 
