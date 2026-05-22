@@ -1,9 +1,17 @@
 import { Prisma } from "@prisma/client";
 import { prisma } from "../prisma.js";
+import { AppError } from "../errors/AppError.js";
 import type { CreateQuizInput, UpdateQuizInput } from "../schemas/quiz.js";
 
-export const getQuizzes = async () => {
-  return prisma.quiz.findMany({
+interface PaginationParams {
+  limit: number;
+  cursor?: string;
+}
+
+export const getQuizzes = async ({ limit, cursor }: PaginationParams) => {
+  const items = await prisma.quiz.findMany({
+    take: limit + 1,
+    ...(cursor && { skip: 1, cursor: { id: cursor } }),
     select: {
       id: true,
       title: true,
@@ -12,10 +20,16 @@ export const getQuizzes = async () => {
     },
     orderBy: { createdAt: "desc" },
   });
+
+  const hasMore = items.length > limit;
+  const data = hasMore ? items.slice(0, limit) : items;
+  const nextCursor = hasMore ? data[data.length - 1].id : null;
+
+  return { data, nextCursor };
 };
 
 export const getQuizById = async (id: string) => {
-  return prisma.quiz.findUnique({
+  const quiz = await prisma.quiz.findUnique({
     where: { id },
     include: {
       questions: {
@@ -28,6 +42,12 @@ export const getQuizById = async (id: string) => {
       },
     },
   });
+
+  if (!quiz) {
+    throw new AppError("Quiz not found", 404);
+  }
+
+  return quiz;
 };
 
 export const makeQuize = async (input: CreateQuizInput) => {

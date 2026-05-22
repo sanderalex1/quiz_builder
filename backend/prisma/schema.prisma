@@ -24,6 +24,9 @@ model Question {
   type     String
   position Int
   answers  Answer[]
+
+  @@index([quizId])
+  @@unique([quizId, position])
 }
 
 model Answer {
@@ -33,4 +36,7 @@ model Answer {
   text       String
   isCorrect  Boolean  @default(false)
   position   Int
+
+  @@index([questionId])
+  @@unique([questionId, position])
 }
