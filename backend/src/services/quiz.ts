@@ -23,7 +23,8 @@ export const getQuizzes = async ({ limit, cursor }: PaginationParams) => {
 
   const hasMore = items.length > limit;
   const data = hasMore ? items.slice(0, limit) : items;
-  const nextCursor = hasMore ? data[data.length - 1].id : null;
+  const lastItem = data[data.length - 1];
+  const nextCursor = hasMore && lastItem ? lastItem.id : null;
 
   return { data, nextCursor };
 };
@@ -87,9 +88,7 @@ export const updateQuize = async (id: string, input: UpdateQuizInput) => {
         where: { quizId: id, id: { notIn: incomingQuestionIds } },
       });
 
-      for (let qIndex = 0; qIndex < input.questions.length; qIndex++) {
-        const q = input.questions[qIndex];
-
+      for (const [qIndex, q] of input.questions.entries()) {
         if (q.id) {
           const incomingAnswerIds = q.answers
             .map((a) => a.id)
@@ -108,8 +107,7 @@ export const updateQuize = async (id: string, input: UpdateQuizInput) => {
             },
           });
 
-          for (let aIndex = 0; aIndex < q.answers.length; aIndex++) {
-            const a = q.answers[aIndex];
+          for (const [aIndex, a] of q.answers.entries()) {
             if (a.id) {
               await tx.answer.update({
                 where: { id: a.id },

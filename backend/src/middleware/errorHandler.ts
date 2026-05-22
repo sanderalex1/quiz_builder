@@ -9,9 +9,9 @@ export const errorHandler = (
   _next: NextFunction,
 ) => {
   if (err instanceof AppError) {
-    res
-      .status(err.statusCode)
-      .json({ error: err.message, ...(err.details && { details: err.details }) });
+    const body: { error: string; details?: unknown } = { error: err.message };
+    if (err.details) body.details = err.details;
+    res.status(err.statusCode).json(body);
     return;
   }
 
