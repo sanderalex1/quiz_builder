@@ -30,7 +30,7 @@ export default function RootLayout() {
           <Button color="inherit" component={RouterLink} to="/quizzes">
             Quizzes
           </Button>
-          <Button color="inherit" component={RouterLink} to="/quizzes/new">
+          <Button color="inherit" component={RouterLink} to="/quizzes/create">
             Create
           </Button>
           <IconButton color="inherit" onClick={toggleMode} sx={{ ml: 1 }}>

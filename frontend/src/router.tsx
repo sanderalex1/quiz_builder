@@ -14,7 +14,7 @@ export const router = createBrowserRouter([
     children: [
       { index: true, element: <HomePage /> },
       { path: "quizzes", element: <QuizListPage /> },
-      { path: "quizzes/new", element: <CreateQuizPage /> },
+      { path: "quizzes/create", element: <CreateQuizPage /> },
       { path: "quizzes/:id", element: <QuizDetailPage /> },
       { path: "quizzes/:id/edit", element: <EditQuizPage /> },
       { path: "*", element: <NotFoundPage /> },
