@@ -1,7 +1,7 @@
 import { Box, Typography, Button } from "@mui/material";
 import { Link as RouterLink } from "react-router";
 
-export default function HomePage() {
+const HomePage = () => {
   return (
     <Box sx={{ textAlign: "center", py: 8 }}>
       <Typography variant="h2" gutterBottom>
@@ -15,4 +15,6 @@ export default function HomePage() {
       </Button>
     </Box>
   );
-}
+};
+
+export default HomePage;

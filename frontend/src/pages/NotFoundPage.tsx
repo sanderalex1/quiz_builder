@@ -1,7 +1,7 @@
 import { Box, Typography, Button } from "@mui/material";
 import { Link as RouterLink } from "react-router";
 
-export default function NotFoundPage() {
+const NotFoundPage = () => {
   return (
     <Box sx={{ textAlign: "center", py: 8 }}>
       <Typography variant="h2" gutterBottom>
@@ -15,4 +15,6 @@ export default function NotFoundPage() {
       </Button>
     </Box>
   );
-}
+};
+
+export default NotFoundPage;

@@ -1,3 +1,11 @@
+export const QuestionType = {
+  SingleText: "single_text",
+  MultipleChoice: "multiple_choice",
+  TrueFalse: "true_false",
+} as const;
+
+export type QuestionType = (typeof QuestionType)[keyof typeof QuestionType];
+
 export type AnswerInput = {
   text: string;
   isCorrect: boolean;
@@ -5,7 +13,7 @@ export type AnswerInput = {
 
 export type QuestionInput = {
   text: string;
-  type: string;
+  type: QuestionType;
   answers: AnswerInput[];
 };
 
@@ -14,8 +22,6 @@ export type CreateQuizInput = {
   description?: string;
   questions: QuestionInput[];
 };
-
-export type UpdateQuizInput = Partial<CreateQuizInput>;
 
 export type Quiz = {
   id: string;
@@ -26,7 +32,7 @@ export type Quiz = {
   questions: Array<{
     id: string;
     text: string;
-    type: string;
+    type: QuestionType;
     position: number;
     answers: Array<{
       id: string;
